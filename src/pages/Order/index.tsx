@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, TextInput } from "react-native";
-import { useRoute, RouteProp } from "@react-navigation/native";
+import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
 import { Feather } from '@expo/vector-icons';
+import { api } from "../../services/api";
 
 type RouteDetailParams = {
     Order:{
@@ -10,23 +11,60 @@ type RouteDetailParams = {
     }
 }
 
+type CategoryProps = {
+    id: string;
+    name: string;
+}
+
 type OrderRouteProps = RouteProp<RouteDetailParams, 'Order'>;
 
 export default function Order(){
     const route = useRoute<OrderRouteProps>();
+    const navigation = useNavigation();
+
+    const [category, setCategory] = useState<CategoryProps[] | []>([]);
+    const [categorySelected, setCategorySelected] = useState<CategoryProps>();
+    const [amount, setAmount] = useState('1');
+
+    useEffect(()=>{
+        async function loadInfo(){
+            const response = await api.get('/category');
+            setCategory(response.data);
+            setCategorySelected(response.data[0]);
+        }
+
+        loadInfo();
+    },[]);
+
+    async function handleCloseOrder(){
+        try{
+            const response = await api.delete('/order', {
+                params:{
+                    order_id: route.params?.order_id
+                }
+            })
+
+            navigation.goBack();
+        }catch(err){
+            console.log("ERRO"+err)
+        }
+    }
 
     return(
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.title}>Mesa {route.params.table}</Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={handleCloseOrder}>
                     <Feather name="trash-2" size={28} color="#FF3F4b" />
                 </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={styles.input}>
-                <Text style={{color:'#FFF'}}>Pizzas</Text>
-            </TouchableOpacity>
+            {category.length !== 0 &&(
+                <TouchableOpacity style={styles.input}>
+                    <Text style={{color:'#FFF'}}>{categorySelected?.name}</Text>
+                </TouchableOpacity>
+            )}
+            
 
             <TouchableOpacity style={styles.input}>
                 <Text style={{color:'#FFF'}}>Pizza de morango</Text>
@@ -34,7 +72,7 @@ export default function Order(){
 
             <View style={styles.qtdContainer}>
                 <Text style={styles.qtdText}>Quantidade</Text>
-                <TextInput style={[styles.input, {width: '60%', textAlign: 'center'}]} placeholder="1" placeholderTextColor="gray" keyboardType="numeric" value="1"></TextInput>
+                <TextInput style={[styles.input, {width: '60%', textAlign: 'center'}]} placeholder="1" placeholderTextColor="gray" keyboardType="numeric" value={amount} onChangeText={setAmount}></TextInput>
             </View>
 
             <View style={styles.actions}>

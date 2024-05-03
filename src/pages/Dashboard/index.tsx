@@ -6,6 +6,8 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { StackParamsList } from "../../routes/app.routes";
 
+import { api } from "../../services/api";
+
 export default function Dashboard(){
     const navigation = useNavigation<NativeStackNavigationProp<StackParamsList>>();
 
@@ -16,8 +18,15 @@ export default function Dashboard(){
             return;
         }
 
-        navigation.navigate('Order', { table: table, order_id: 'askd-deds-wsw93-wdod'});
+        const response = await api.post('/order', {
+            table: Number(table)
+        })
+
+        //console.log(response.data)
+
+        navigation.navigate('Order', { table: table, order_id: response.data.id});
         
+        setTable('');
     }
 
 
