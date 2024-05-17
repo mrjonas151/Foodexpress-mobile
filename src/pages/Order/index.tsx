@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Modal } from "react-native";
 import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
 import { Feather } from '@expo/vector-icons';
 import { api } from "../../services/api";
+import { ModalPicker } from "../../components/ModalPicker";
 
 type RouteDetailParams = {
     Order:{
@@ -11,7 +12,7 @@ type RouteDetailParams = {
     }
 }
 
-type CategoryProps = {
+export type CategoryProps = {
     id: string;
     name: string;
 }
@@ -25,6 +26,7 @@ export default function Order(){
     const [category, setCategory] = useState<CategoryProps[] | []>([]);
     const [categorySelected, setCategorySelected] = useState<CategoryProps>();
     const [amount, setAmount] = useState('1');
+    const [modalCategoryVisible, setModalCategoryVisible] = useState(false);
 
     useEffect(()=>{
         async function loadInfo(){
@@ -50,6 +52,10 @@ export default function Order(){
         }
     }
 
+    function handleChangeCategory(item: CategoryProps){
+        setCategorySelected(item);
+    }
+
     return(
         <View style={styles.container}>
             <View style={styles.header}>
@@ -60,7 +66,7 @@ export default function Order(){
             </View>
 
             {category.length !== 0 &&(
-                <TouchableOpacity style={styles.input}>
+                <TouchableOpacity style={styles.input} onPress={ () => setModalCategoryVisible(true)}>
                     <Text style={{color:'#FFF'}}>{categorySelected?.name}</Text>
                 </TouchableOpacity>
             )}
@@ -84,6 +90,15 @@ export default function Order(){
                     <Text style={styles.buttonText}>Avançar</Text>
                 </TouchableOpacity>
             </View>
+
+            <Modal transparent={true} visible={modalCategoryVisible} animationType="fade">
+                <ModalPicker 
+                handleCloseModal= { () => setModalCategoryVisible(false) } 
+                options = {category}
+                selectedItem= { handleChangeCategory }
+
+                />
+            </Modal>
 
         </View>
     )
