@@ -128,7 +128,10 @@ export default function Order(){
     }
 
     async function handleFinishOrder(){
-        navigation.navigate("FinishOrder")
+        navigation.navigate("FinishOrder", {
+            table:route.params?.table,
+            order_id: route.params?.order_id
+        })
     }
 
     return(
